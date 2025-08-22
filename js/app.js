@@ -80,6 +80,12 @@ function convertGoogleDriveUrl(url) {
   return url;
 }
 
+// Новая функция: определяем ссылки Google Drive, чтобы игнорировать их
+function isDriveLink(url){
+  if(!url) return false;
+  return /(?:^|\/)\/(?:drive\.google\.com|docs\.google\.com|drive\.usercontent\.google\.com)/i.test(url);
+}
+
 function normalizeDealType(dealType) {
   if (!dealType) return '';
   const deal = dealType.toLowerCase().trim();
@@ -141,7 +147,7 @@ function cardTemplate(item) {
     const isRent = (dealType || '').toLowerCase().startsWith('аренда');
     const priceHuman = price ? `${isRent ? '' : 'от '}${new Intl.NumberFormat('ru-RU').format(price)} THB` : 'Цена по запросу';
     const defaultImg = 'images/hero.jpg';
-    const safeImg = defaultImg;
+    const safeImg = (item.imageUrl && !isDriveLink(item.imageUrl)) ? item.imageUrl : defaultImg;
     const showCategory = !isRent && !!category;
 
     // Единый темный стиль бейджей
@@ -156,7 +162,7 @@ function cardTemplate(item) {
     return `
       <article class="group rounded-2xl border border-slate-100 overflow-hidden bg-white hover:shadow-card transition" data-property-id="${item.id}">
         <div class="relative h-48 overflow-hidden">
-          <img src="${safeImg}" alt="${title}" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+          <img src="${safeImg}" alt="${title}" data-open-property="${item.id}" onerror="this.onerror=null;this.src='images/hero.jpg';" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300 cursor-pointer" />
           ${topBadge}
           ${districtBadge}
         </div>
@@ -354,34 +360,31 @@ function parseNotionPage(page) {
     }
   }
 
-  // Image: files, URL, or text URL
+  // Image: files, URL, or text URL (игнорируем ссылки из Google Drive)
   let imageUrl = '';
-  const files = props['Фото']?.files || props['Изображение']?.files || [];
-  
-  // Сначала проверяем URL поле (для Google Drive ссылок)
-  const photoUrlProp = props['Фото']?.url || props['Изображение']?.url;
-  if (photoUrlProp) {
-    imageUrl = convertGoogleDriveUrl(photoUrlProp);
+  const candidates = [];
+
+  // URL-поля
+  if (props['Фото']?.url) candidates.push(props['Фото'].url);
+  if (props['Изображение']?.url) candidates.push(props['Изображение'].url);
+
+  // Rich text URL
+  const rtPhoto = getRichText(props['Фото']);
+  if (rtPhoto && /^https?:/i.test(rtPhoto)) candidates.push(rtPhoto);
+  const rtImage = getRichText(props['Изображение']);
+  if (rtImage && /^https?:/i.test(rtImage)) candidates.push(rtImage);
+
+  // Files & media
+  const filesPhoto = Array.isArray(props['Фото']?.files) ? props['Фото'].files : [];
+  const filesImage = Array.isArray(props['Изображение']?.files) ? props['Изображение'].files : [];
+  const files = [...filesPhoto, ...filesImage];
+  for (const f of files) {
+    const raw = f?.type === 'file' ? (f.file?.url || '') : (f.external?.url || '');
+    if (raw) candidates.push(raw);
   }
-  
-  // Если нет URL, проверяем rich text
-  if (!imageUrl) {
-    const txt = getRichText(props['Фото'] || props['Изображение']);
-    if (txt && /^https?:/i.test(txt)) {
-      imageUrl = convertGoogleDriveUrl(txt);
-    }
-  }
-  
-  // В последнюю очередь проверяем файлы
-  if (!imageUrl && files.length) {
-    const f = files[0];
-    const rawFileUrl = f.type === 'file' ? f.file.url : f.external?.url || '';
-    
-    // Преобразуем Google Drive URL из файлов
-    if (rawFileUrl) {
-      imageUrl = convertGoogleDriveUrl(rawFileUrl);
-    }
-  }
+
+  const firstValid = candidates.find(u => /^https?:/i.test(u) && !isDriveLink(u));
+  if (firstValid) imageUrl = firstValid;
 
   // URL
   const url = props['Ссылка']?.url || props['URL']?.url || page.url;
@@ -550,7 +553,7 @@ function buildPropertyModal(data){
   const gallery = `
     <div class="swiper mySwiper rounded-xl overflow-hidden">
       <div class="swiper-wrapper">
-        ${images.map(src=>`<div class="swiper-slide"><img src="${src}" class="w-full h-72 sm:h-80 object-cover" alt="${data.title}" /></div>`).join('')}
+        ${images.map(src=>`<div class="swiper-slide"><img src="${src}" onerror="this.onerror=null;this.src='images/hero.jpg';" class="w-full h-72 sm:h-80 object-cover" alt="${data.title}" /></div>`).join('')}
       </div>
       <div class="swiper-pagination"></div>
       <div class="swiper-button-prev"></div>
