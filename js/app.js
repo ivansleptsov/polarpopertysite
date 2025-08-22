@@ -213,6 +213,8 @@ function renderGrid(items) {
 
 function renderPagination() {
   if (!paginationEl) return;
+  // Center the pagination controls
+  paginationEl.classList.add('mt-6','flex','justify-center','items-center','gap-2','flex-wrap');
   const total = filteredItems.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (totalPages <= 1) { paginationEl.innerHTML = ''; return; }
@@ -724,68 +726,6 @@ if (yearEl) yearEl.textContent = String(new Date().getFullYear());
   console.log('Начинаем загрузку всех данных...');
   allItems = await fetchNotion('all');
   filteredItems = allItems.slice();
-// Enhance lead form phone input behavior
-window.addEventListener('input', e=>{
-  const t = e.target;
-  if(t && t.name === 'phone'){
-    t.value = maskPhone(t.value);
-  }
-});
-window.addEventListener('paste', e=>{
-  const t = e.target;
-  if(t && t.name === 'phone'){
-    e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData).getData('text') || '';
-    t.value = maskPhone(text);
-  }
-});
-// Submit lead
-window.addEventListener('submit', async e=>{
-  if(e.target.id==='leadForm'){
-    e.preventDefault();
-    const f=e.target; const statusEl=f.querySelector('#leadStatus'); statusEl.textContent='Отправка...'; statusEl.className='text-sm mt-2';
-    const phoneRaw = f.phone.value;
-    const norm = validateAndNormalizePhone(phoneRaw);
-    if(!norm.ok){
-      statusEl.textContent = norm.error;
-      statusEl.classList.add('text-red-600');
-      f.phone.classList.add('border-red-500');
-      return;
-    }
-    f.phone.classList.remove('border-red-500');
-    f.phone.value = norm.value; // show normalized
-    const payload={ name:f.name.value.trim(), phone:norm.value, contactMethod:f.method.value, propertyTitle:f.propertyTitle.value, dealType:f.dealType.value, propertyObjectId: f.propertyObjectId.value };
-    try{
-      const res= await fetch('/api/notion/lead',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-      const js=await res.json();
-      if(!res.ok || !js.ok){ throw new Error(js.error||'Ошибка'); }
-      statusEl.className='text-sm mt-2 text-emerald-600';
-      statusEl.textContent='Ваша заявка отправлена.';
-      // Убираем автозакрытие модалок
-      // setTimeout(()=>{ closeLeadModal(); closePropertyModal(); window.location.hash='#home'; },1500);
-    }catch(err){ statusEl.className='text-sm mt-2 text-red-600'; statusEl.textContent='Ошибка отправки. Попробуйте ещё раз.'; }
-  }
-});
-
-// Mobile menu
-const menuBtn = document.getElementById('menuBtn');
-const mobileMenu = document.getElementById('mobileMenu');
-menuBtn?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
-
-// Language toggle demo (no i18n yet)
-const langToggle = document.getElementById('langToggle');
-langToggle?.addEventListener('click', () => alert('Смена языка (демо)'));
-
-// Footer year
-const yearEl = document.getElementById('year');
-if (yearEl) yearEl.textContent = String(new Date().getFullYear());
-
-// Init
-(async function init() {
-  CONFIG.apiBase = '';
-  console.log('Начинаем загрузку всех данных...');
-  allItems = await fetchNotion('all');
-  filteredItems = allItems.slice();
   console.log('Загружено объектов:', allItems.length);
   
   // Показываем все объекты без фильтров при загрузке
@@ -944,3 +884,14 @@ function openLightbox(images, startIdx = 0, title=''){
   ensureLightbox();
   lbImages = Array.isArray(images)? images.slice() : [];
   lbIndex = Math.min(Math.max(0, startIdx||0), Math.max(0, lbImages.length-1));
+  if (lbImages.length === 0) {
+    lbImgEl.src = 'images/hero.jpg';
+    lbTitleEl.textContent = title || '';
+    lbCounterEl.textContent = '';
+  } else {
+    lbImgEl.src = lbImages[lbIndex];
+    lbTitleEl.textContent = title || '';
+    lbCounterEl.textContent = `${lbIndex + 1} / ${lbImages.length}`;
+  }
+  lbEl.classList.remove('hidden');
+}
