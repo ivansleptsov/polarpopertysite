@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Polar Property Asia — Агентство недвижимости</title>
+  <meta name="description" content="Агентство недвижимости: продажа и аренда. Лучшие предложения, юридическое сопровождение, консультации." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#ecfeff',
+              100: '#cffafe',
+              200: '#a5f3fc',
+              300: '#67e8f9',
+              400: '#22d3ee',
+              500: '#06b6d4',
+              600: '#0891b2',
+              700: '#0e7490',
+              800: '#155e75',
+              900: '#164e63',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji'],
+          },
+          boxShadow: {
+            card: '0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.08)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .glass { backdrop-filter: blur(8px); background: rgba(255,255,255,0.7); }
+  </style>
+</head>
+<body class="font-sans text-slate-800">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="#home" class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-primary-600 text-white font-bold">PP</span>
+          <span class="text-lg font-semibold">Polar Property</span>
+        </a>
+
+        <!-- Nav -->
+        <nav class="hidden md:flex items-center gap-8 text-sm">
+          <a href="#home" class="hover:text-primary-600 transition">Главная</a>
+          <a href="#about" class="hover:text-primary-600 transition">О нас</a>
+          <a href="#listings" class="hover:text-primary-600 transition">Продажа</a>
+          <a href="#listings" class="hover:text-primary-600 transition">Аренда</a>
+          <a href="#contact" class="hover:text-primary-600 transition">Контакты</a>
+        </nav>
+
+        <div class="hidden md:flex items-center gap-3">
+          <!-- Language toggle -->
+          <button id="langToggle" title="Сменить язык" class="p-2 rounded-lg hover:bg-slate-100 transition" aria-label="Сменить язык">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3c4.97 0 9 4.03 9 9s-4.03 9-9 9-9-4.03-9-9 4.03-9 9-9zM3.6 9h16.8M3.6 15h16.8M12 3c2.5 3 3.75 6 3.75 9S14.5 18 12 21M12 3C9.5 6 8.25 9 8.25 12S9.5 18 12 21" />
+            </svg>
+          </button>
+          <a href="#contact" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition">
+            Связаться
+          </a>
+        </div>
+
+        <!-- Mobile menu button -->
+        <button id="menuBtn" class="md:hidden p-2 rounded-lg hover:bg-slate-100 transition" aria-label="Открыть меню">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8h16M4 16h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="md:hidden hidden border-t border-slate-100">
+      <nav class="px-4 py-3 space-y-2 text-sm">
+        <a href="#home" class="block p-2 rounded hover:bg-slate-100 transition">Главная</a>
+        <a href="#about" class="block p-2 rounded hover:bg-slate-100 transition">О нас</a>
+        <a href="#listings" class="block p-2 rounded hover:bg-slate-100 transition">Продажа</a>
+        <a href="#listings" class="block p-2 rounded hover:bg-slate-100 transition">Аренда</a>
+        <a href="#contact" class="block p-2 rounded hover:bg-slate-100 transition">Контакты</a>
+        <a href="#contact" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition">Связаться</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section id="home" class="relative h-[80vh] min-h-[520px] flex items-center">
+    <div class="absolute inset-0 -z-10 bg-center bg-cover" style="background-image:url('images/hero.jpg');"></div>
+    <div class="absolute inset-0 -z-10 bg-slate-900/50"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div class="grid lg:grid-cols-2 gap-8 items-center">
+        <div class="text-white">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight">Найдите дом мечты с Polar Property</h1>
+          <p class="mt-4 text-slate-100/90 max-w-xl">Продажа и аренда недвижимости. Эксклюзивные объекты, полное сопровождение сделки и честные цены.</p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="#listings" class="bg-white text-slate-900 hover:bg-slate-100 px-5 py-2.5 rounded-lg transition">Смотреть объекты</a>
+            <a href="#contact" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-lg transition">Консультация</a>
+          </div>
+        </div>
+
+        <!-- Search form -->
+        <form id="searchForm" class="glass rounded-2xl p-4 sm:p-5 lg:p-6 shadow-card">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm text-slate-700 mb-1">Тип сделки</label>
+              <select id="dealType" class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500">
+                <option value="">Любой</option>
+                <option>Продажа</option>
+                <option>Аренда долгосрочная</option>
+                <option>Аренда краткосрочная</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-slate-700 mb-1">Категория</label>
+              <select id="category" class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500">
+                <option value="">Любая</option>
+                <option>Сданные</option>
+                <option>Строящиеся</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-slate-700 mb-1">Район</label>
+              <select id="district" class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500">
+                <option value="">Все</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-slate-700 mb-1">Цена от</label>
+                <input id="priceMin" type="number" min="0" placeholder="0" class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500" />
+              </div>
+              <div>
+                <label class="block text-sm text-slate-700 mb-1">Цена до</label>
+                <input id="priceMax" type="number" min="0" placeholder="Любая" class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500" />
+              </div>
+            </div>
+          </div>
+          <button class="mt-4 w-full bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-lg transition">Найти</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="py-16 sm:py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-10 items-center">
+        <img src="images/ourteam.jpeg" alt="Наша команда Polar Property" class="w-full h-72 sm:h-80 lg:h-[420px] object-cover rounded-2xl shadow-card" />
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-semibold">О нас</h2>
+          <p class="mt-4 text-slate-600">Мы локальное агентство с многолетним опытом на рынке. Предлагаем эксклюзивные объекты и предоставляем полное сопровождение на всех этапах сделки: от подбора до юридического оформления.</p>
+          <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="p-4 rounded-xl border border-slate-100 hover:shadow-card transition">
+              <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center mb-2">🏆</div>
+              <div class="font-medium">Опыт</div>
+              <div class="text-sm text-slate-600">10+ лет на рынке</div>
+            </div>
+            <div class="p-4 rounded-xl border border-slate-100 hover:shadow-card transition">
+              <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center mb-2">🔑</div>
+              <div class="font-medium">Эксклюзив</div>
+              <div class="text-sm text-slate-600">Лучшие предложения</div>
+            </div>
+            <div class="p-4 rounded-xl border border-slate-100 hover:shadow-card transition">
+              <div class="w-10 h-10 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center mb-2">⚖️</div>
+              <div class="font-medium">Сопровождение</div>
+              <div class="text-sm text-slate-600">Юридическая поддержка</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section id="categories" class="py-14 sm:py-16 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl sm:text-3xl font-semibold">Категории недвижимости</h2>
+      <div class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <!-- Строящиеся -->
+        <button type="button" data-deal="Продажа" data-category="Строящиеся" class="relative group overflow-hidden rounded-2xl h-72 bg-slate-900 flex flex-col justify-end">
+          <img src="images/hero.jpg" alt="Строящиеся проекты" class="absolute inset-0 w-full h-full object-cover brightness-90 group-hover:scale-105 transition-transform duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent"></div>
+          <div class="relative p-4">
+            <span class="inline-flex px-2.5 py-0.5 rounded-full bg-primary-600/80 text-white text-[10px] font-semibold tracking-wide uppercase">Продажа</span>
+            <h3 class="mt-3 text-base font-semibold text-white leading-snug">Строящиеся проекты</h3>
+            <p class="mt-1 text-xs text-slate-200">Инвестиции на раннем этапе</p>
+            <span class="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-primary-200 group-hover:text-white">Смотреть →</span>
+          </div>
+        </button>
+        <!-- Сданные -->
+        <button type="button" data-deal="Продажа" data-category="Сданные" class="relative group overflow-hidden rounded-2xl h-72 bg-slate-900 flex flex-col justify-end">
+          <img src="images/hero.jpg" alt="Сданные объекты" class="absolute inset-0 w-full h-full object-cover brightness-90 group-hover:scale-105 transition-transform duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent"></div>
+          <div class="relative p-4">
+            <span class="inline-flex px-2.5 py-0.5 rounded-full bg-primary-600/80 text-white text-[10px] font-semibold tracking-wide uppercase">Продажа</span>
+            <h3 class="mt-3 text-base font-semibold text-white leading-snug">Сданные объекты</h3>
+            <p class="mt-1 text-xs text-slate-200">Готовые к заселению</p>
+            <span class="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-primary-200 group-hover:text-white">Смотреть →</span>
+          </div>
+        </button>
+        <!-- Аренда долгосрочная -->
+        <button type="button" data-deal="Аренда долгосрочная" data-category="" class="relative group overflow-hidden rounded-2xl h-72 bg-slate-900 flex flex-col justify-end">
+          <img src="images/hero.jpg" alt="Долгосрочная аренда" class="absolute inset-0 w-full h-full object-cover brightness-90 group-hover:scale-105 transition-transform duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent"></div>
+            <div class="relative p-4">
+              <span class="inline-flex px-2.5 py-0.5 rounded-full bg-emerald-600/80 text-white text-[10px] font-semibold tracking-wide uppercase">Аренда</span>
+              <h3 class="mt-3 text-base font-semibold text-white leading-snug">Долгосрочная аренда</h3>
+              <p class="mt-1 text-xs text-slate-200">Контракты от 6 месяцев</p>
+              <span class="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-emerald-200 group-hover:text-white">Смотреть →</span>
+            </div>
+        </button>
+        <!-- Аренда краткосрочная -->
+        <button type="button" data-deal="Аренда краткосрочная" data-category="" class="relative group overflow-hidden rounded-2xl h-72 bg-slate-900 flex flex-col justify-end">
+          <img src="images/hero.jpg" alt="Краткосрочная аренда" class="absolute inset-0 w-full h-full object-cover brightness-90 group-hover:scale-105 transition-transform duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent"></div>
+          <div class="relative p-4">
+            <span class="inline-flex px-2.5 py-0.5 rounded-full bg-amber-500/80 text-white text-[10px] font-semibold tracking-wide uppercase">Аренда</span>
+            <h3 class="mt-3 text-base font-semibold text-white leading-snug">Краткосрочная аренда</h3>
+            <p class="mt-1 text-xs text-slate-200">Посуточно и до 6 мес</p>
+            <span class="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-amber-200 group-hover:text-white">Смотреть →</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Listings -->
+  <section id="listings" class="py-16 sm:py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-semibold">Объекты</h2>
+          <p class="text-slate-600 mt-1">Данные загружаются из Notion</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <select id="filterDeal" class="rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500">
+            <option value="">Тип сделки: Все</option>
+            <option>Продажа</option>
+            <option>Аренда долгосрочная</option>
+            <option>Аренда краткосрочная</option>
+          </select>
+          <select id="filterCategory" class="rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500">
+            <option value="">Категория: Все</option>
+            <option>Сданные</option>
+            <option>Строящиеся</option>
+          </select>
+          <select id="filterDistrict" class="rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500">
+            <option value="">Район: Все</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div id="propertiesGrid" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      <div id="pagination" class="mt-8 flex flex-wrap items-center gap-2"></div>
+      <!-- Empty state / errors -->
+      <div id="stateMsg" class="hidden mt-8 p-6 rounded-xl bg-slate-50 border border-slate-200 text-slate-700"></div>
+    </div>
+  </section>
+
+  <!-- Why us -->
+  <section class="py-14 sm:py-16 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl sm:text-3xl font-semibold">Почему выбирают нас</h2>
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-5 rounded-2xl bg-white border border-slate-100 hover:shadow-card transition">
+          <div class="w-12 h-12 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center mb-3">📜</div>
+          <div class="font-medium">Юридическая чистота</div>
+          <div class="text-sm text-slate-600">Проверяем документы и защищаем интересы</div>
+        </div>
+        <div class="p-5 rounded-2xl bg-white border border-slate-100 hover:shadow-card transition">
+          <div class="w-12 h-12 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center mb-3">🧭</div>
+          <div class="font-medium">Локальные эксперты</div>
+          <div class="text-sm text-slate-600">Знаем районы и цены</div>
+        </div>
+        <div class="p-5 rounded-2xl bg-white border border-slate-100 hover:shadow-card transition">
+          <div class="w-12 h-12 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center mb-3">💬</div>
+          <div class="font-medium">Консультации</div>
+          <div class="text-sm text-slate-600">Подберём варианты под ваш запрос</div>
+        </div>
+        <div class="p-5 rounded-2xl bg-white border border-slate-100 hover:shadow-card transition">
+          <div class="w-12 h-12 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center mb-3">🛂</div>
+          <div class="font-medium">Помощь с ВНЖ</div>
+          <div class="text-sm text-slate-600">Сопровождение оформления</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="py-14 sm:py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl sm:text-3xl font-semibold">Отзывы клиентов</h2>
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+          <div class="flex items-center gap-3">
+            <img class="w-10 h-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop" alt="Алексей">
+            <div>
+              <div class="font-medium">Алексей</div>
+              <div class="text-xs text-slate-500">Покупка квартиры</div>
+            </div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Быстро нашли отличный вариант и помогли с документами. Рекомендую!</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+          <div class="flex items-center gap-3">
+            <img class="w-10 h-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop" alt="Мария">
+            <div>
+              <div class="font-medium">Мария</div>
+              <div class="text-xs text-slate-500">Долгосрочная аренда</div>
+            </div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Нашли жильё в нужном районе по адекватной цене. Отличный сервис.</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+          <div class="flex items-center gap-3">
+            <img class="w-10 h-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" alt="Ирина">
+            <div>
+              <div class="font-medium">Ирина</div>
+              <div class="text-xs text-slate-500">Краткосрочная аренда</div>
+            </div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Удобно и прозрачно. Помогли оформить всё за один день.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Free Catalog Section -->
+  <section id="catalog" class="py-16 sm:py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-semibold">Бесплатный каталог новостроек</h2>
+          <p class="mt-4 text-slate-600 leading-relaxed">Получите актуальный PDF‑каталог всех строящихся и недавно сданных проектов Паттайи: цены от застройщиков, стадии строительства, планы, акции и возможность раннего бронирования. Мы обновляем каталог регулярно, чтобы вы сразу видели реальные условия без «маркетингового шума».</p>
+          <ul class="mt-4 text-sm text-slate-600 space-y-1 list-disc pl-5">
+            <li>Все жилые комплексы в одном файле</li>
+            <li>Минимальные цены и доступные типологии</li>
+            <li>Сроки сдачи и статус строительства</li>
+            <li>Экономия времени на самостоятельный сбор данных</li>
+          </ul>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="https://t.me/PolarPropertyBot" target="_blank" rel="noopener" class="px-5 py-3 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium transition">Открыть бота</a>
+          </div>
+          <div class="mt-3 text-xs text-slate-500">Каталог выдаётся ботом после подписки на наш основной Telegram‑канале. Отписаться можно в любой момент.</div>
+        </div>
+        <div class="relative">
+          <div class="absolute inset-0 rounded-3xl bg-gradient-to-tr from-primary-600/10 to-primary-300/10 pointer-events-none"></div>
+            <div class="p-6 rounded-3xl bg-white border border-slate-100 shadow-card flex flex-col gap-5">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                  <div class="text-2xl mb-1">🏢</div>
+                  <div class="text-sm font-medium">Проектов</div>
+                  <div class="text-lg font-semibold">80+</div>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                  <div class="text-2xl mb-1">🕒</div>
+                  <div class="text-sm font-medium">Обновление</div>
+                  <div class="text-lg font-semibold">Каждые 2 нед</div>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                  <div class="text-2xl mb-1">💰</div>
+                  <div class="text-sm font-medium">Цены от</div>
+                  <div class="text-lg font-semibold">Застройщиков</div>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                  <div class="text-2xl mb-1">📄</div>
+                  <div class="text-sm font-medium">Формат</div>
+                  <div class="text-lg font-semibold">PDF</div>
+                </div>
+              </div>
+              <div class="rounded-xl border border-primary-100 bg-primary-50/60 p-4 text-sm text-primary-800">Первые инвесторы получают лучшие условия на старте продаж. Возьмите каталог — мы поможем сравнить проекты и выбрать оптимальный.</div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact form -->
+  <section id="contact" class="py-16 sm:py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-10">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-semibold">Связаться с нами</h2>
+          <p class="mt-2 text-slate-600">Оставьте заявку — перезвоним и проконсультируем.</p>
+          <form id="contactForm" class="mt-6 p-5 bg-white rounded-2xl border border-slate-100">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm text-slate-700 mb-1">Имя</label>
+                <input type="text" required class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500" />
+              </div>
+              <div>
+                <label class="block text-sm text-slate-700 mb-1">Телефон</label>
+                <input type="tel" required class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm text-slate-700 mb-1">Тип недвижимости</label>
+                <select class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500">
+                  <option>Квартира</option>
+                  <option>Дом</option>
+                  <option>Коммерческая</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm text-slate-700 mb-1">Сообщение</label>
+                <textarea rows="4" class="w-full rounded-lg border-slate-200 focus:border-primary-500 focus:ring-primary-500" placeholder="Коротко опишите запрос"></textarea>
+              </div>
+            </div>
+            <button class="mt-4 w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg transition">Отправить</button>
+          </form>
+        </div>
+        <div class="space-y-4">
+          <div class="p-5 bg-white rounded-2xl border border-slate-100 space-y-2">
+            <div class="font-medium text-lg">Наши контакты</div>
+            <div class="text-sm text-slate-700 space-y-1">
+              <div>✈️ Telegram: <a href="https://t.me/PolarProperty" target="_blank" rel="noopener" class="font-medium text-primary-600 hover:underline">@PolarProperty</a></div>
+              <div>📷 Instagram: <a href="https://instagram.com/Polar.Property" target="_blank" rel="noopener" class="font-medium text-primary-600 hover:underline">@Polar.Property</a></div>
+              <div>💬 WhatsApp: <a href="https://wa.me/66968300106" target="_blank" rel="noopener" class="font-medium text-primary-600 hover:underline">Написать</a></div>
+              <div>📞 <a href="tel:+66968300106" class="hover:text-primary-600">+66 96 830 01 06</a></div>
+              <div>📍 <a href="https://maps.google.com/?q=Pattaya+Thailand" target="_blank" rel="noopener" class="hover:text-primary-600">Паттайя, Таиланд</a></div>
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="p-5 bg-white rounded-2xl border border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-primary-50 text-primary-700 flex items-center justify-center text-xl">👩‍💼</div>
+                <div>
+                  <div class="font-medium">Любовь</div>
+                  <div class="text-xs text-slate-500">Менеджер</div>
+                </div>
+              </div>
+              <div class="mt-3 text-sm space-y-1 text-slate-700">
+                <div>✈️ Tg: <a href="https://t.me/lyubov_danilove" target="_blank" rel="noopener" class="text-primary-600 hover:underline">@lyubov_danilove</a></div>
+                <div>🇷🇺 <a href="https://wa.me/79644229573" target="_blank" rel="noopener" class="hover:text-primary-600">+7 964 422 95 73 (WhatsApp)</a></div>
+                <div>🇹🇭 <a href="https://wa.me/66968300106" target="_blank" rel="noopener" class="hover:text-primary-600">+66 96 830 01 06 (WhatsApp)</a></div>
+              </div>
+            </div>
+            <div class="p-5 bg-white rounded-2xl border border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-primary-50 text-primary-700 flex items-center justify-center text-xl">👩‍💼</div>
+                <div>
+                  <div class="font-medium">Надежда</div>
+                  <div class="text-xs text-slate-500">Менеджер</div>
+                </div>
+              </div>
+              <div class="mt-3 text-sm space-y-1 text-slate-700">
+                <div>✈️ Tg: <a href="https://t.me/mandarinka_nadya" target="_blank" rel="noopener" class="text-primary-600 hover:underline">@mandarinka_nadya</a></div>
+                <div>🇷🇺 <a href="https://wa.me/79241713616" target="_blank" rel="noopener" class="hover:text-primary-600">+7 924 171 36 16 (WhatsApp)</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-100 py-10 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 items-center">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-primary-600 text-white font-bold">PP</span>
+          <span class="text-lg font-semibold">Polar Property</span>
+        </div>
+        <nav class="flex flex-wrap gap-4 text-sm justify-start sm:justify-center">
+          <a href="#home" class="hover:text-primary-600 transition">Главная</a>
+          <a href="#about" class="hover:text-primary-600 transition">О нас</a>
+          <a href="#listings" class="hover:text-primary-600 transition">Объекты</a>
+          <a href="#contact" class="hover:text-primary-600 transition">Контакты</a>
+          <a href="#" class="hover:text-primary-600 transition">Политика</a>
+        </nav>
+        <div class="text-sm text-slate-500 sm:text-right">© <span id="year"></span> Polar Property. Все права защищены.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Property Detail Modal -->
+  <div id="propertyModal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-close></div>
+    <div class="absolute inset-0 overflow-y-auto p-4 sm:p-6">
+      <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 relative">
+        <button class="absolute top-3 right-3 p-2 rounded-lg hover:bg-slate-100 text-slate-500" data-modal-close aria-label="Закрыть">✕</button>
+        <div id="propertyModalContent" class="opacity-0 transition-opacity duration-200"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="./js/app.js"></script>
+</body>
+</html>
