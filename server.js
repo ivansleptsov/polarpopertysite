@@ -96,12 +96,20 @@ app.post('/api/notion/lead', async (req,res)=>{
       raw = raw.replace(/[\s()\-]/g,'');
       if(raw.startsWith('00')) raw = '+'+raw.slice(2);
       if(raw[0] !== '+'){
-        if(/^[78]\d{10}$/.test(raw)) raw = '+7'+raw.slice(1); // RU
-        else if(/^66\d{8,9}$/.test(raw)) raw = '+'+raw; // TH
+        if(/^[78]\d{10}$/.test(raw)) raw = '+7'+raw.slice(1); // РФ локально 11 цифр
+        else if(/^0\d{9}$/.test(raw)) raw = '+66'+raw.slice(1); // TH локально 0 + 9 цифр
+        else if(/^66\d{8,9}$/.test(raw)) raw = '+'+raw; // TH без плюса
         else if(/^\d{7,15}$/.test(raw)) raw = '+'+raw; // generic
         else return null;
       }
-      if(!/^\+\d{7,15}$/.test(raw)) return null;
+      // country-specific strict lengths
+      if(/^\+7/.test(raw)){
+        if(!/^\+7\d{10}$/.test(raw)) return null;
+      } else if(/^\+66/.test(raw)){
+        if(!/^\+66\d{8,9}$/.test(raw)) return null;
+      } else {
+        if(!/^\+\d{7,15}$/.test(raw)) return null;
+      }
       return raw;
     }
     const phoneNormalized = normalizePhone(phone);
@@ -251,6 +259,151 @@ app.post('/api/notion/lead', async (req,res)=>{
     let json; try { json = JSON.parse(rawTxt); } catch(_) { json = { id:'unknown' }; }
     res.json({ ok:true, id: json.id });
   } catch(e){ console.error(e); res.status(500).json({error:e.message||'lead error'}); }
+});
+
+app.post('/api/notion/consultation', async (req, res) => {
+  try {
+    const token = process.env.NOTION_TOKEN;
+    if (!token) return res.status(500).json({ error: 'NOTION_TOKEN is not set' });
+    const notionVersion = '2022-06-28';
+    const consultationsDB = process.env.CONSULTATIONS_DATABASE_ID || process.env.CONSULT_DB_ID || process.env.CONSULTATION_DATABASE_ID;
+    if (!consultationsDB) return res.status(500).json({ error: 'CONSULTATIONS_DATABASE_ID not configured' });
+
+    const { name, phone } = req.body || {};
+    if (!name || !phone) return res.status(400).json({ error: 'name and phone required' });
+
+    function normalizePhone(input) {
+      let raw = String(input || '').trim();
+      if (!raw) return null;
+      raw = raw.replace(/[\s()\-]/g, '');
+      if (raw.startsWith('00')) raw = '+' + raw.slice(2);
+      if (raw[0] !== '+') {
+        if (/^[78]\d{10}$/.test(raw)) raw = '+7' + raw.slice(1); // RU
+        else if (/^0\d{9}$/.test(raw)) raw = '+66' + raw.slice(1); // TH локально 0 + 9 цифр
+        else if (/^66\d{8,9}$/.test(raw)) raw = '+' + raw; // TH без плюса
+        else if (/^\d{7,15}$/.test(raw)) raw = '+' + raw; // generic
+        else return null;
+      }
+      // country-specific strict lengths
+      if (/^\+7/.test(raw)) {
+        if (!/^\+7\d{10}$/.test(raw)) return null;
+      } else if (/^\+66/.test(raw)) {
+        if (!/^\+66\d{8,9}$/.test(raw)) return null;
+      } else {
+        if (!/^\+\d{7,15}$/.test(raw)) return null;
+      }
+      return raw;
+    }
+    const phoneNormalized = normalizePhone(phone);
+    if (!phoneNormalized) return res.status(400).json({ error: 'Invalid phone format' });
+
+    function buildUTCPlus7() {
+      const nowUtc = Date.now();
+      const plus7 = new Date(nowUtc + 7 * 60 * 60 * 1000);
+      const pad = (n) => String(n).padStart(2, '0');
+      return (
+        `${plus7.getUTCFullYear()}-${pad(plus7.getUTCMonth() + 1)}-${pad(plus7.getUTCDate())}` +
+        `T${pad(plus7.getUTCHours())}:${pad(plus7.getUTCMinutes())}:${pad(plus7.getUTCSeconds())}+07:00`
+      );
+    }
+    const dateTimeFull = buildUTCPlus7();
+
+    // Fetch DB meta
+    const dbMetaResp = await fetch(`https://api.notion.com/v1/databases/${consultationsDB}` , {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Notion-Version': notionVersion,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!dbMetaResp.ok) {
+      const txt = await dbMetaResp.text();
+      console.error('Failed to fetch consultations DB meta', txt);
+      return res.status(500).json({ error: 'Failed to fetch consultations DB meta' });
+    }
+    const dbMeta = await dbMetaResp.json();
+    const propertiesMeta = dbMeta.properties || {};
+    const lowerMap = {};
+    for (const key of Object.keys(propertiesMeta)) lowerMap[key.toLowerCase()] = key;
+    function findKey(candidates) {
+      for (const c of candidates) {
+        const k = lowerMap[c.toLowerCase()];
+        if (k) return k;
+      }
+      return null;
+    }
+
+    // Determine keys
+    let titleKey = null;
+    for (const k of Object.keys(propertiesMeta)) if (propertiesMeta[k].type === 'title') { titleKey = k; break; }
+    const nameKey = findKey(['имя', 'name', titleKey || '']);
+    const phoneKey = findKey(['телефон', 'phone', 'номер', 'phone number']);
+    const sourceKey = findKey(['источник', 'source']);
+    const dateKey = findKey(['дата', 'date', 'created date']);
+
+    const props = {};
+
+    // Always set title to name
+    if (titleKey) {
+      props[titleKey] = { title: [{ text: { content: String(name).slice(0, 200) } }] };
+    }
+    // If there is a separate "Имя" prop and it's not the title prop
+    if (nameKey && nameKey !== titleKey) {
+      const meta = propertiesMeta[nameKey];
+      if (meta.type === 'rich_text') props[nameKey] = { rich_text: [{ text: { content: String(name).slice(0, 400) } }] };
+      else if (meta.type === 'title') props[nameKey] = { title: [{ text: { content: String(name).slice(0, 200) } }] };
+    }
+
+    if (phoneKey) {
+      const meta = propertiesMeta[phoneKey];
+      if (meta.type === 'phone_number') props[phoneKey] = { phone_number: phoneNormalized };
+      else if (meta.type === 'rich_text') props[phoneKey] = { rich_text: [{ text: { content: phoneNormalized } }] };
+    }
+
+    if (sourceKey) {
+      const meta = propertiesMeta[sourceKey];
+      const sourceVal = 'сайт';
+      if (meta.type === 'select') props[sourceKey] = { select: { name: sourceVal } };
+      else if (meta.type === 'multi_select') props[sourceKey] = { multi_select: [{ name: sourceVal }] };
+      else if (meta.type === 'rich_text') props[sourceKey] = { rich_text: [{ text: { content: sourceVal } }] };
+      else if (meta.type === 'title' && !props[sourceKey]) props[sourceKey] = { title: [{ text: { content: sourceVal } }] };
+    }
+
+    if (dateKey) {
+      const meta = propertiesMeta[dateKey];
+      if (meta.type === 'date') props[dateKey] = { date: { start: dateTimeFull } };
+      else if (meta.type === 'rich_text') props[dateKey] = { rich_text: [{ text: { content: dateTimeFull } }] };
+    }
+
+    // Safety: ensure at least title set
+    if (!Object.keys(props).length && titleKey) {
+      props[titleKey] = { title: [{ text: { content: String(name).slice(0, 200) } }] };
+    }
+
+    const resp = await fetch('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Notion-Version': notionVersion,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ parent: { database_id: consultationsDB }, properties: props }),
+    });
+
+    const rawTxt = await resp.text();
+    if (!resp.ok) {
+      console.error('Notion create consultation error', resp.status, rawTxt);
+      let errJson;
+      try { errJson = JSON.parse(rawTxt); } catch (_) {}
+      return res.status(resp.status).json({ error: errJson?.message || rawTxt });
+    }
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: e.message || 'consultation error' });
+  }
 });
 
 app.listen(PORT, () => {

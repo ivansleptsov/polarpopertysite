@@ -124,20 +124,28 @@ function validateAndNormalizePhone(input){
   raw = raw.replace(/[\s()\-]/g,'')
   // заменить 00 на +
   if(raw.startsWith('00')) raw = '+' + raw.slice(2);
-  // если нет плюса – пытаемся угадать
+  // если нет плюса – пытаемся угадать по стране
   if(raw[0] !== '+'){
-    if(/^[78]\d{10}$/.test(raw)) { // Россия 11 цифр, начинается с 7 или 8
+    if(/^[78]\d{10}$/.test(raw)) { // РФ: 11 цифр, начинается с 7 или 8
       raw = '+7' + raw.slice(1);
-    } else if(/^66\d{8,9}$/.test(raw)) { // Таиланд без плюса
-      raw = '+'+raw;
-    } else if(/^\d{7,15}$/.test(raw)) { // просто числа
+    } else if(/^0\d{9}$/.test(raw)) { // Таиланд локально: 0 + 9 цифр -> +66 + 9 цифр
+      raw = '+66' + raw.slice(1);
+    } else if(/^66\d{8,9}$/.test(raw)) { // Таиланд без плюса, 66 + 8–9 цифр
+      raw = '+' + raw;
+    } else if(/^\d{7,15}$/.test(raw)) { // generic
       raw = '+'+raw;
     } else {
       return { ok:false, error:'Неверный формат телефона' };
     }
   }
-  // Финальная проверка: только + и 7-15 цифр
-  if(!/^\+\d{7,15}$/.test(raw)) return { ok:false, error:'Неверный телефон' };
+  // Строгая проверка по стране
+  if(/^\+7/.test(raw)){
+    if(!/^\+7\d{10}$/.test(raw)) return { ok:false, error:'Для РФ требуется 11 цифр (+7XXXXXXXXXX)' };
+  } else if(/^\+66/.test(raw)){
+    if(!/^\+66\d{8,9}$/.test(raw)) return { ok:false, error:'Для Таиланда требуется +66 и 8–9 цифр' };
+  } else {
+    if(!/^\+\d{7,15}$/.test(raw)) return { ok:false, error:'Неверный телефон' };
+  }
   return { ok:true, value: raw };
 }
 
@@ -716,6 +724,68 @@ if (yearEl) yearEl.textContent = String(new Date().getFullYear());
   console.log('Начинаем загрузку всех данных...');
   allItems = await fetchNotion('all');
   filteredItems = allItems.slice();
+// Enhance lead form phone input behavior
+window.addEventListener('input', e=>{
+  const t = e.target;
+  if(t && t.name === 'phone'){
+    t.value = maskPhone(t.value);
+  }
+});
+window.addEventListener('paste', e=>{
+  const t = e.target;
+  if(t && t.name === 'phone'){
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+    t.value = maskPhone(text);
+  }
+});
+// Submit lead
+window.addEventListener('submit', async e=>{
+  if(e.target.id==='leadForm'){
+    e.preventDefault();
+    const f=e.target; const statusEl=f.querySelector('#leadStatus'); statusEl.textContent='Отправка...'; statusEl.className='text-sm mt-2';
+    const phoneRaw = f.phone.value;
+    const norm = validateAndNormalizePhone(phoneRaw);
+    if(!norm.ok){
+      statusEl.textContent = norm.error;
+      statusEl.classList.add('text-red-600');
+      f.phone.classList.add('border-red-500');
+      return;
+    }
+    f.phone.classList.remove('border-red-500');
+    f.phone.value = norm.value; // show normalized
+    const payload={ name:f.name.value.trim(), phone:norm.value, contactMethod:f.method.value, propertyTitle:f.propertyTitle.value, dealType:f.dealType.value, propertyObjectId: f.propertyObjectId.value };
+    try{
+      const res= await fetch('/api/notion/lead',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+      const js=await res.json();
+      if(!res.ok || !js.ok){ throw new Error(js.error||'Ошибка'); }
+      statusEl.className='text-sm mt-2 text-emerald-600';
+      statusEl.textContent='Ваша заявка отправлена.';
+      // Убираем автозакрытие модалок
+      // setTimeout(()=>{ closeLeadModal(); closePropertyModal(); window.location.hash='#home'; },1500);
+    }catch(err){ statusEl.className='text-sm mt-2 text-red-600'; statusEl.textContent='Ошибка отправки. Попробуйте ещё раз.'; }
+  }
+});
+
+// Mobile menu
+const menuBtn = document.getElementById('menuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+menuBtn?.addEventListener('click', () => mobileMenu?.classList.toggle('hidden'));
+
+// Language toggle demo (no i18n yet)
+const langToggle = document.getElementById('langToggle');
+langToggle?.addEventListener('click', () => alert('Смена языка (демо)'));
+
+// Footer year
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+// Init
+(async function init() {
+  CONFIG.apiBase = '';
+  console.log('Начинаем загрузку всех данных...');
+  allItems = await fetchNotion('all');
+  filteredItems = allItems.slice();
   console.log('Загружено объектов:', allItems.length);
   
   // Показываем все объекты без фильтров при загрузке
@@ -763,6 +833,39 @@ if (yearEl) yearEl.textContent = String(new Date().getFullYear());
   filterDeal?.addEventListener('change', applyFilters);
   filterCategory?.addEventListener('change', applyFilters);
   filterDistrict?.addEventListener('change', applyFilters);
+
+  // Consultation form submit
+  const contactForm = document.getElementById('contactForm');
+  contactForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const statusEl = document.getElementById('contactStatus');
+    if (statusEl) { statusEl.textContent = 'Отправка...'; statusEl.className = 'mt-2 text-sm'; }
+    const name = (form.name?.value || '').trim();
+    const phoneRaw = form.phone?.value || '';
+
+    const norm = validateAndNormalizePhone(phoneRaw);
+    if (!norm.ok) {
+      if (statusEl) { statusEl.textContent = norm.error; statusEl.classList.add('text-red-600'); }
+      form.phone?.classList.add('border-red-500');
+      return;
+    }
+    form.phone?.classList.remove('border-red-500');
+    if (form.phone) form.phone.value = norm.value;
+
+    try {
+      const resp = await fetch('/api/notion/consultation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone: norm.value })
+      });
+      const js = await resp.json().catch(() => ({}));
+      if (!resp.ok || js.error) throw new Error(js.error || 'Ошибка');
+      if (statusEl) { statusEl.textContent = 'Заявка получена. Мы скоро позвоним.'; statusEl.className = 'mt-2 text-sm text-emerald-600'; }
+    } catch (err) {
+      if (statusEl) { statusEl.textContent = 'Ошибка отправки. Попробуйте ещё раз.'; statusEl.className = 'mt-2 text-sm text-red-600'; }
+    }
+  });
 })();
 
 // Global delegation to open property modal
@@ -841,10 +944,3 @@ function openLightbox(images, startIdx = 0, title=''){
   ensureLightbox();
   lbImages = Array.isArray(images)? images.slice() : [];
   lbIndex = Math.min(Math.max(0, startIdx||0), Math.max(0, lbImages.length-1));
-  if(lbTitleEl) lbTitleEl.textContent = title || '';
-  updateLightbox();
-  lbEl.classList.remove('hidden');
-}
-function closeLightbox(){ lbEl?.classList.add('hidden'); }
-function changeLightbox(delta){ if(!lbImages.length) return; lbIndex = (lbIndex + delta + lbImages.length) % lbImages.length; updateLightbox(); }
-function updateLightbox(){ if(!lbImgEl) return; const src = lbImages[lbIndex] || 'images/hero.jpg'; lbImgEl.src = src; if(lbCounterEl) lbCounterEl.textContent = `${lbIndex+1} / ${Math.max(1, lbImages.length)}`; }
