@@ -541,6 +541,16 @@ function openPropertyModal(item){
   modal.classList.remove('hidden');
   requestAnimationFrame(()=>modalContent.classList.remove('opacity-0'));
   if(window.Swiper){ new Swiper(modalContent.querySelector('.mySwiper'), { loop: images.length>1, pagination:{el:'.swiper-pagination', clickable:true}, navigation:{nextEl:'.swiper-button-next', prevEl:'.swiper-button-prev'}, slidesPerView:1, spaceBetween:0 }); }
+  // Открытие полноэкранного просмотра по клику на изображение в галерее
+  const galleryEl = modalContent.querySelector('.mySwiper');
+  galleryEl?.addEventListener('click', (ev)=>{
+    const img = ev.target.closest('img');
+    if(!img) return;
+    ev.preventDefault();
+    const src = img.getAttribute('src');
+    const startIndex = Math.max(0, images.findIndex(s=>s===src));
+    openLightbox(images, startIndex, data.title);
+  });
   const toggleBtn = modalContent.querySelector('#toggleDesc');
   const descBlock = modalContent.querySelector('#descBlock');
   toggleBtn?.addEventListener('click',()=>{ const collapsed = descBlock.classList.toggle('max-h-32'); if(!collapsed){ descBlock.style.maxHeight='none'; toggleBtn.textContent='Свернуть'; } else { descBlock.style.maxHeight='8rem'; toggleBtn.textContent='Развернуть'; } descBlock.querySelector('.fade-mask')?.classList.toggle('hidden'); });
@@ -787,3 +797,54 @@ window.addEventListener('click', (e)=>{
     closePropertyModal();
   }
 });
+
+// Полноэкранный лайтбокс для изображений модалки
+let lbEl, lbImgEl, lbTitleEl, lbCounterEl; let lbImages = []; let lbIndex = 0;
+function ensureLightbox(){
+  if(lbEl) return;
+  lbEl = document.createElement('div');
+  lbEl.id = 'lightbox';
+  lbEl.className = 'fixed inset-0 z-[200] hidden';
+  lbEl.innerHTML = `
+    <div class="absolute inset-0 bg-slate-900/90" data-lb-close></div>
+    <div class="absolute inset-0 flex flex-col">
+      <div class="flex items-center justify-between gap-3 p-3 text-white">
+        <div id="lbTitle" class="text-sm truncate"></div>
+        <div class="flex items-center gap-2">
+          <div id="lbCounter" class="text-xs opacity-80"></div>
+          <button class="px-2 py-1 rounded bg-white/10 hover:bg-white/20" title="Закрыть" data-lb-close>✕</button>
+        </div>
+      </div>
+      <div class="relative flex-1 flex items-center justify-center px-4">
+        <button class="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl" data-lb-prev aria-label="Предыдущая">‹</button>
+        <img id="lbImg" src="" alt="" class="max-h-[85vh] max-w-full object-contain rounded-md bg-slate-50" onerror="this.onerror=null;this.src='images/hero.jpg';" />
+        <button class="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl" data-lb-next aria-label="Следующая">›</button>
+      </div>
+    </div>`;
+  document.body.appendChild(lbEl);
+  lbImgEl = lbEl.querySelector('#lbImg');
+  lbTitleEl = lbEl.querySelector('#lbTitle');
+  lbCounterEl = lbEl.querySelector('#lbCounter');
+  lbEl.addEventListener('click',(e)=>{
+    if(e.target.matches('[data-lb-close]')) closeLightbox();
+    else if(e.target.matches('[data-lb-prev]')) changeLightbox(-1);
+    else if(e.target.matches('[data-lb-next]')) changeLightbox(1);
+  });
+  window.addEventListener('keydown',(e)=>{
+    if(lbEl.classList.contains('hidden')) return;
+    if(e.key==='Escape') closeLightbox();
+    if(e.key==='ArrowLeft') changeLightbox(-1);
+    if(e.key==='ArrowRight') changeLightbox(1);
+  });
+}
+function openLightbox(images, startIdx = 0, title=''){
+  ensureLightbox();
+  lbImages = Array.isArray(images)? images.slice() : [];
+  lbIndex = Math.min(Math.max(0, startIdx||0), Math.max(0, lbImages.length-1));
+  if(lbTitleEl) lbTitleEl.textContent = title || '';
+  updateLightbox();
+  lbEl.classList.remove('hidden');
+}
+function closeLightbox(){ lbEl?.classList.add('hidden'); }
+function changeLightbox(delta){ if(!lbImages.length) return; lbIndex = (lbIndex + delta + lbImages.length) % lbImages.length; updateLightbox(); }
+function updateLightbox(){ if(!lbImgEl) return; const src = lbImages[lbIndex] || 'images/hero.jpg'; lbImgEl.src = src; if(lbCounterEl) lbCounterEl.textContent = `${lbIndex+1} / ${Math.max(1, lbImages.length)}`; }
